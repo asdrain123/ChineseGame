@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>蹴鞠破門 - 文言核心概念挑戰</title>
+    <style>
+        :root {
+            --primary-wood: #5c3a21;
+            --light-wood: #8c6239;
+            --paper-bg: #f4ebd0;
+            --field-green: #2d5a27;
+            --accent-red: #a83232;
+            --accent-gold: #d4af37;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            font-family: "Microsoft JhengHei", "Noto Serif TC", serif;
+        }
+
+        body {
+            background-color: #1a1a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 850px;
+            height: 650px;
+            background: linear-gradient(to bottom, #1e3c72 0%, #2a5298 30%, var(--field-green) 30%, #1b3817 100%);
+            border: 8px solid var(--primary-wood);
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 頂部標題與計分板 */
+        .header-bar {
+            width: 100%;
+            padding: 10px 20px;
+            background: rgba(0, 0, 0, 0.4);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #fff;
+            z-index: 10;
+        }
+
+        .game-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--accent-gold);
+            letter-spacing: 2px;
+        }
+
+        .score-board {
+            font-size: 16px;
+            background: var(--primary-wood);
+            padding: 4px 12px;
+            border-radius: 15px;
+            border: 1px solid var(--accent-gold);
+        }
+
+        /* 題目顯示區域（球門上方） */
+        .question-container {
+            width: 90%;
+            margin-top: 10px;
+            background: var(--paper-bg);
+            border: 3px solid var(--primary-wood);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            z-index: 10;
+        }
+
+        .question-tag {
+            font-size: 13px;
+            color: var(--accent-red);
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .question-text {
+            font-size: 17px;
+            font-weight: bold;
+            color: #222;
+            line-height: 1.4;
+        }
+
+        /* 球門區域 */
+        .goal-container {
+            width: 600px;
+            height: 260px;
+            margin-top: 15px;
+            position: relative;
+            border-top: 10px solid var(--light-wood);
+            border-left: 10px solid var(--light-wood);
+            border-right: 10px solid var(--light-wood);
+            /* 球網背景 */
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.15) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.15) 1px, transparent 1px);
+            background-size: 20px 20px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.6);
+        }
+
+        /* 四角選項按鈕 */
+        .option-btn {
+            position: absolute;
+            width: 170px;
+            height: 55px;
+            background: rgba(244, 235, 208, 0.95);
+            border: 2px solid var(--primary-wood);
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: bold;
+            color: #111;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 4px;
+            transition: all 0.2s;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+            z-index: 5;
+        }
+
+        .option-btn:hover {
+            background: #fff;
+            border-color: var(--accent-gold);
+            transform: scale(1.05);
+        }
+
+        /* 4個角的位置定位 */
+        #opt-0 { top: 10px; left: 10px; }
+        #opt-1 { top: 10px; right: 10px; }
+        #opt-2 { bottom: 10px; left: 10px; }
+        #opt-3 { bottom: 10px; right: 10px; }
+
+	.goalkeeper {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 90px;
+            height: 120px;
+            transform: translateX(-50%);
+            transition: left 0.1s linear, bottom 0.3s ease;
+            z-index: 4;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        .goalkeeper img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0px 5px 5px rgba(0,0,0,0.4));
+        }
+
+        /* 蹴鞠（足球）與草地 */
+        .pitch-area {
+            width: 100%;
+            flex-grow: 1;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            padding-bottom: 25px;
+        }
+
+        .cuju-ball {
+            width: 50px;
+            height: 50px;
+            background: radial-gradient(circle at 30% 30%, #e6aa68, #7d4614);
+            border-radius: 50%;
+            border: 2px solid #3d2005;
+            position: absolute;
+            bottom: 25px;
+            cursor: pointer;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.4);
+            transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), left 0.6s ease, top 0.6s ease;
+            z-index: 6;
+        }
+
+        /* 蹴鞠皮紋裝飾 */
+        .cuju-ball::after {
+            content: "⚽";
+            font-size: 32px;
+            opacity: 0.3;
+            display: block;
+            text-align: center;
+            line-height: 46px;
+        }
+
+        /* 提示文字 */
+        .hint-text {
+            position: absolute;
+            bottom: 5px;
+            color: #d4af37;
+            font-size: 14px;
+            letter-spacing: 1px;
+        }
+
+        /* 反饋彈窗遮罩 */
+        .overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .result-card {
+            background: var(--paper-bg);
+            border: 4px solid var(--primary-wood);
+            border-radius: 10px;
+            padding: 25px;
+            text-align: center;
+            max-width: 450px;
+            width: 85%;
+        }
+
+        .result-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .result-title.correct { color: #2e7d32; }
+        .result-title.wrong { color: var(--accent-red); }
+
+        .result-desc {
+            font-size: 16px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+            color: #444;
+        }
+
+        .next-btn {
+            background: var(--primary-wood);
+            color: var(--paper-bg);
+            border: none;
+            padding: 10px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .next-btn:hover {
+            background: var(--accent-red);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <!-- 頂部資訊 -->
+        <div class="header-bar">
+            <div class="game-title">⚔️ 蹴鞠破門：文言概念大挑戰</div>
+            <div class="score-board">進球數：<span id="score">0</span> / <span id="total-q">0</span></div>
+        </div>
+
+        <!-- 題目區域 -->
+        <div class="question-container">
+            <div class="question-tag" id="q-tag">【一詞多義 / 通假字】</div>
+            <div class="question-text" id="q-text">題目載入中...</div>
+        </div>
+
+        <!-- 球門與選項 -->
+        <div class="goal-container" id="goal-frame">
+            <!-- 4角選項按鈕 -->
+            <button class="option-btn" id="opt-0" onclick="shoot(0)"></button>
+            <button class="option-btn" id="opt-1" onclick="shoot(1)"></button>
+            <button class="option-btn" id="opt-2" onclick="shoot(2)"></button>
+            <button class="option-btn" id="opt-3" onclick="shoot(3)"></button>
+
+            <!-- 守門員（SVG矢量古風人物） -->
+	    <div class="goalkeeper" id="goalkeeper">
+		<img src="goalkeeper.png" alt="守門員" id="gk-img">
+            </div>
+        </div>
+
+        <!-- 球場與蹴鞠 -->
+        <div class="pitch-area" id="pitch">
+            <div class="cuju-ball" id="ball"></div>
+            <div class="hint-text">點擊球門四角的答案進行射門！</div>
+        </div>
+
+        <!-- 結果結算彈窗 -->
+        <div class="overlay" id="overlay">
+            <div class="result-card">
+                <div class="result-title" id="res-title">破網得分！</div>
+                <div class="result-desc" id="res-desc">解釋正確，這一腳射得非常精準！</div>
+                <button class="next-btn" id="next-btn" onclick="nextQuestion()">下一題</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 題庫資料（包含一詞多義與通假字）
+        const quizData = [
+            {
+                tag: "一詞多義",
+                question: "「置於市」與「若所市於人者」中的「市」字意思分別為：",
+                options: ["集市 / 售賣", "售賣 / 集市", "買入 / 賣出", "城市 / 市民"],
+                answer: 0,
+                explain: "前者為名詞「集市」（在集市買下）；後者為動詞「售賣/賣給」（像你賣給別人的東西）。"
+            },
+            {
+                tag: "一詞多義",
+                question: "「則乾若敗絮」與「若所市於人者」中的「若」字意思分別為：",
+                options: ["好像 / 你", "你 / 好像", "如果 / 如此", "好像 / 如果"],
+                answer: 0,
+                explain: "前者為動詞/副詞「好像」（乾得像破棉絮）；後者為代詞「你」（像你賣給別人的東西）。"
+            },
+            {
+                tag: "一詞多義",
+                question: "「吾業是有年矣」與「建伊皋之業」中的「業」字意思分別為：",
+                options: ["從事（以...為業） / 功業", "功業 / 家業", "學業 / 功業", "職業 / 產業"],
+                answer: 0,
+                explain: "鍾老師給你一個讚 !!!"
+            },
+            {
+                tag: "通假字",
+                question: "置於市，賈十倍」中的「賈」字解作：",
+                options: ["通假字，通「價」，價格", "商人", "買進", "通假字，通「假」"],
+                answer: 0,
+                explain: "鍾老師給你兩個讚 !!!"
+            },
+            {
+                tag: "通假字",
+                question: "「將衒外以惑愚瞽也」中的「衒」字解作：",
+                options: ["通假字，通「炫」，炫耀", "旋轉", "眩暈", "通假字，通「弦」"],
+                answer: 0,
+                explain: "鍾老師給你一個大大的讚 !!!"
+            }
+        ];
+
+        let currentQIndex = 0;
+        let score = 0;
+        let isAnimating = false;
+        let gkPos = 50; // 守門員 X 軸位置百分比 (20% - 80%)
+        let gkDirection = 1;
+        let gkInterval = null;
+
+        // 初始化遊戲
+        function initGame() {
+            document.getElementById('total-q').innerText = quizData.length;
+            startKeeperMove();
+            loadQuestion();
+        }
+
+        // 守門員左右巡邏移動
+        function startKeeperMove() {
+            if (gkInterval) clearInterval(gkInterval);
+            gkInterval = setInterval(() => {
+                if (isAnimating) return; // 射門期間暫停自動巡邏
+                
+                gkPos += gkDirection * 1.5;
+                if (gkPos >= 75) gkDirection = -1;
+                if (gkPos <= 25) gkDirection = 1;
+                
+                const gk = document.getElementById('goalkeeper');
+                gk.style.left = gkPos + '%';
+            }, 30);
+        }
+
+        // 載入題目與隨機打亂選項
+        function loadQuestion() {
+            isAnimating = false;
+            resetBall();
+            
+            const q = quizData[currentQIndex];
+            document.getElementById('q-tag').innerText = `【${q.tag}】`;
+            document.getElementById('q-text').innerText = q.question;
+
+            // 隨機排列選項，但保持正確答案對應
+            let opts = q.options.map((opt, idx) => ({ text: opt, isCorrect: idx === q.answer }));
+            opts.sort(() => Math.random() - 0.5);
+
+            for (let i = 0; i < 4; i++) {
+                const btn = document.getElementById(`opt-${i}`);
+                btn.innerText = opts[i].text;
+                btn.dataset.correct = opts[i].isCorrect;
+                btn.style.pointerEvents = 'auto';
+            }
+        }
+
+        // 射門邏輯
+        function shoot(optIndex) {
+            if (isAnimating) return;
+            isAnimating = true;
+
+            // 禁用按鈕點擊
+            for (let i = 0; i < 4; i++) {
+                document.getElementById(`opt-${i}`).style.pointerEvents = 'none';
+            }
+
+            const targetBtn = document.getElementById(`opt-${optIndex}`);
+            const isCorrect = targetBtn.dataset.correct === 'true';
+
+            // 取得目標選項在球網區域內的相對座標
+            const goalFrame = document.getElementById('goal-frame').getBoundingClientRect();
+            const btnRect = targetBtn.getBoundingClientRect();
+            
+            const targetX = btnRect.left + btnRect.width/2 - goalFrame.left;
+            const targetY = btnRect.top + btnRect.height/2 - goalFrame.top;
+
+            // 守門員撲球邏輯
+            const gk = document.getElementById('goalkeeper');
+            let gkTargetX;
+
+            if (isCorrect) {
+                // 答對：守門員往反方向撲躍（撲錯方向）
+                gkTargetX = (targetX > goalFrame.width / 2) ? 15 : 85;
+            } else {
+                // 答錯：守門員精準撲向目標角落（擋出球）
+                gkTargetX = (targetX / goalFrame.width) * 100;
+            }
+
+            // 移動守門員
+            gk.style.transition = "left 0.4s cubic-bezier(0.25, 1, 0.5, 1)";
+            gk.style.left = gkTargetX + "%";
+
+            // 蹴鞠飛向目標角落動畫
+            const ball = document.getElementById('ball');
+            
+            // 計算蹴鞠需要位移的距離
+            const ballRect = ball.getBoundingClientRect();
+            const moveX = (btnRect.left + btnRect.width/2) - (ballRect.left + ballRect.width/2);
+            const moveY = (btnRect.top + btnRect.height/2) - (ballRect.top + ballRect.height/2);
+
+            ball.style.transform = `translate(${moveX}px, ${moveY}px) scale(0.4)`;
+
+            // 判定結果與彈窗顯示
+            setTimeout(() => {
+                if (isCorrect) {
+                    score++;
+                    document.getElementById('score').innerText = score;
+                    showFeedback(true, "破網得分！", quizData[currentQIndex].explain);
+                } else {
+                    // 答錯時球彈開效果
+                    ball.style.transform = `translate(${moveX * 0.8}px, ${moveY + 50}px) scale(0.5)`;
+                    showFeedback(false, "已被撲出！", quizData[currentQIndex].explain);
+                }
+            }, 650);
+        }
+
+        // 重置蹴鞠位置
+        function resetBall() {
+            const ball = document.getElementById('ball');
+            ball.style.transition = 'none';
+            ball.style.transform = 'translate(0, 0) scale(1)';
+            
+            const gk = document.getElementById('goalkeeper');
+            gk.style.transition = 'left 0.1s linear';
+        }
+
+        // 顯示結果彈窗
+        function showFeedback(isCorrect, title, desc) {
+            const overlay = document.getElementById('overlay');
+            const titleEl = document.getElementById('res-title');
+            const descEl = document.getElementById('res-desc');
+            const nextBtn = document.getElementById('next-btn');
+
+            titleEl.innerText = title;
+            titleEl.className = `result-title ${isCorrect ? 'correct' : 'wrong'}`;
+            descEl.innerText = desc;
+
+            if (currentQIndex === quizData.length - 1) {
+                nextBtn.innerText = "查看總成績";
+            } else {
+                nextBtn.innerText = "下一題";
+            }
+
+            overlay.classList.add('active');
+        }
+
+        // 下一題或結算
+        function nextQuestion() {
+            document.getElementById('overlay').classList.remove('active');
+            currentQIndex++;
+
+            if (currentQIndex < quizData.length) {
+                loadQuestion();
+            } else {
+                // 遊戲結束結算
+                document.getElementById('q-tag').innerText = "【挑戰完成】";
+                document.getElementById('q-text').innerText = `恭喜完成蹴鞠挑戰！最終得分：${score} / ${quizData.length}`;
+                
+                document.getElementById('res-title').innerText = "🏆 蹴鞠大師";
+                document.getElementById('res-title').className = "result-title correct";
+                document.getElementById('res-desc').innerText = `你一共射入 ${score} 球！對文言文「一詞多義」與「通假字」的掌握度極高！`;
+                
+                const nextBtn = document.getElementById('next-btn');
+                nextBtn.innerText = "再玩一次";
+                nextBtn.onclick = () => {
+                    location.reload();
+                };
+                
+                document.getElementById('overlay').classList.add('active');
+            }
+        }
+
+        // 啟動遊戲
+        window.onload = initGame;
+    </script>
+</body>
+</html>
